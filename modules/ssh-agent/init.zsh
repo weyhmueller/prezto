@@ -45,7 +45,11 @@ function _ssh-agent-start {
 zstyle -b ':prezto:module:ssh-agent' forwarding '_ssh_agent_forwarding'
 if is-true "${_ssh_agent_forwarding}" && [[ -n "$SSH_AUTH_SOCK" ]]; then
   # Add a nifty symlink for screen/tmux if agent forwarding.
-  [[ -L "$SSH_AUTH_SOCK" ]] || ln -sf "$SSH_AUTH_SOCK" /tmp/ssh-agent-$USER-screen
+  if [[ ! -S $(readlink /tmp/ssh-agent-$USER-screen) ]]; then
+    [[ -L "$SSH_AUTH_SOCK" ]] || ln -sf "$SSH_AUTH_SOCK" /tmp/ssh-agent-$USER-screen && export SSH_AUTH_SOCK=/tmp/ssh-agent-$USER-screen
+  else
+    export SSH_AUTH_SOCK=/tmp/ssh-agent-$USER-screen
+  fi
 elif [[ -s "${_ssh_agent_env}" ]]; then
   # Source SSH settings, if applicable.
   source "${_ssh_agent_env}" > /dev/null
