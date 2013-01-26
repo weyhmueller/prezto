@@ -12,6 +12,8 @@ pmodload 'helper' 'spectrum'
 
 # Correct commands.
 setopt CORRECT
+setopt CORRECT_ALL
+ setopt NOBEEP
 
 #
 # Aliases
