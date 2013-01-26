@@ -1,0 +1,236 @@
+# vim:ft=zsh ts=2 sw=2 sts=2
+#
+# agnoster's Theme - https://gist.github.com/3712874
+# modified by weyhmueller
+# A Powerline-inspired theme for ZSH
+#
+# # README
+#
+# In order for this theme to render correctly, you will need a
+# [Powerline-patched font](https://gist.github.com/1595572).
+#
+# In addition, I recommend the
+# [Solarized theme](https://github.com/altercation/solarized/) and, if you're
+# using it on Mac OS X, [iTerm 2](http://www.iterm2.com/) over Terminal.app -
+# it has significantly better color fidelity.
+#
+# # Goals
+#
+# The aim of this theme is to only show you *relevant* information. Like most
+# prompts, it will only show git information when in a git working directory.
+# However, it goes a step further: everything from the current user and
+# hostname to whether the last call exited with an error to whether background
+# jobs are running in this shell will all be displayed automatically when
+# appropriate.
+
+### Segment drawing
+# A few utility functions to make it easy and re-usable to draw segmented prompts
+
+CURRENT_BG='NONE'
+CURRENT_REV_BG='NONE'
+SEGMENT_SEPARATOR='⮀'
+SEGMENT_REV_SEPARATOR='⮂'
+
+# Begin a segment
+# Takes two arguments, background and foreground. Both can be omitted,
+# rendering default background/foreground.
+prompt_segment() {
+  local bg fg
+  [[ -n $1 ]] && bg="%K{$1}" || bg="%k"
+  [[ -n $2 ]] && fg="%F{$2}" || fg="%f"
+  if [[ $CURRENT_BG != 'NONE' && $1 != $CURRENT_BG ]]; then
+    echo -n " %{$bg%F{$CURRENT_BG}%}$SEGMENT_SEPARATOR%{$fg%} "
+  else
+    echo -n "%{$bg%}%{$fg%} "
+  fi
+  CURRENT_BG=$1
+  [[ -n $3 ]] && echo -n $3
+}
+
+prompt_segment_rev() {
+  local bg fg
+  [[ -n $1 ]] && bg="%K{$1}" || bg="%k"
+  [[ -n $2 ]] && fg="%F{$2}" || fg="%f"
+  if [[ $1 != $CURRENT_REV_BG  && $1 != "default" ]]; then
+    echo -n " %{%F{$1}%}$SEGMENT_REV_SEPARATOR%{$bg%}%{$fg%}"
+  else
+    echo -n "%{$bg%}%{$fg%} "
+  fi
+  CURRENT_REV_BG=$1
+  [[ -n $3 ]] && echo -n $3
+}
+
+# End the prompt, closing any open segments
+prompt_end() {
+  if [[ -n $CURRENT_BG ]]; then
+    echo -n " %{%k%F{$CURRENT_BG}%}$SEGMENT_SEPARATOR"
+  else
+    echo -n "%{%k%}"
+  fi
+  echo -n "%{%f%}"
+  CURRENT_BG=''
+}
+
+### Prompt components
+# Each component will draw itself, and hide itself if no information needs to be shown
+
+# Context: user@hostname (who am I and where am I)
+prompt_context() {
+  local user=`whoami`
+
+  if [[ "$user" != "$DEFAULT_USER" || -n "$SSH_CLIENT" ]]; then
+    prompt_segment black default "%(!.%{%F{red}%}.)$user@%m"
+  fi
+}
+
+# Git: branch/detached head, dirty status
+prompt_git() {
+  local ref dirty
+  if $(git rev-parse --is-inside-work-tree >/dev/null 2>&1); then
+    dirty=$(parse_git_dirty)
+    remote=$(git_remote_status)
+    ref=$(git symbolic-ref HEAD 2> /dev/null) || ref="➦ $(git show-ref --head -s --abbrev |head -n1 2> /dev/null)"
+    if [[ $dirty == $ZSH_THEME_GIT_PROMPT_DIRTY ]]; then
+      prompt_segment yellow black
+    elif [[ -n $remote ]]; then
+      if [[ $remote == $ZSH_THEME_GIT_PROMPT_AHEAD_REMOTE ]]; then
+        prompt_segment blue black
+        GIT_CLEAN_COLOR=$GIT_LCL_CLEAN_COLOR
+      else
+        prompt_segment red black
+      fi
+    else
+      prompt_segment green black
+      GIT_CLEAN_COLOR=$GIT_REM_CLEAN_COLOR
+    fi
+    echo -n "${ref/refs\/heads\//⭠ }$dirty$remote"
+  fi
+}
+
+prompt_git_user() {
+  if $(git rev-parse --is-inside-work-tree >/dev/null 2>&1); then
+    local gitrepuser="$(git config --local user.email)"
+    local gitglobuser="$(git config --global user.email)"
+    local gituser="${GIT_AUTHOR_EMAIL:-${gitrepuser:-${gitglobuser}}}"
+    if [[ ${gituser} == 'oliver@weyhmueller.de' || ${gituser} == '' ]]; then
+      gituser="oli"
+      prompt_segment green black
+    elif [[ ${gituser} == 'oliver.weyhmueller@t-systems.com' ]]; then
+      gituser="tsi"
+      prompt_segment magenta black
+    else
+      gituser="???"
+      prompt_segment red black
+    fi
+    echo -n "$gituser"
+  fi
+}
+
+# Dir: current working directory
+prompt_dir() {
+  prompt_segment blue black "${PWD/#$HOME/~}"
+}
+
+# Status:
+# - was there an error
+# - am I root
+# - are there background jobs?
+prompt_status() {
+  local symbols
+  symbols=()
+  [[ $RETVAL -ne 0 ]] && symbols+="%{%F{red}%}✘ $RETVAL"
+  [[ $UID -eq 0 ]] && symbols+="%{%F{yellow}%}⚡"
+  [[ $(jobs -l | wc -l) -gt 0 ]] && symbols+="%{%F{cyan}%}⚙"
+
+  [[ -n "$symbols" ]] && prompt_segment black default "$symbols"
+}
+
+prompt_time() {
+  prompt_segment_rev default cyan '%D{%H:%M:%S}'
+}
+
+prompt_date() {
+  prompt_segment_rev default default '%D{%Y-%m-%d}'
+}
+
+prompt_history() {
+  prompt_segment_rev green black '[%h]'
+}
+
+## Main prompt
+build_prompt() {
+  RETVAL=$?
+  prompt_status
+  prompt_context
+  prompt_dir
+  prompt_git_user
+  prompt_git
+  prompt_end
+}
+
+## Rev Prompt
+build_rev_prompt() {
+  prompt_time
+  prompt_date
+  prompt_history
+}
+
+if [ "$POWERLINE_RIGHT_B" = "" ]; then
+  POWERLINE_RIGHT_B=%D{%H:%M:%S}
+fi
+
+if [ "$POWERLINE_RIGHT_A" = "" ]; then
+  POWERLINE_RIGHT_A=%D{%Y-%m-%d}
+fi
+
+if [ "$POWERLINE_FULL_CURRENT_PATH" = "" ]; then
+  POWERLINE_CURRENT_PATH="%1~"
+fi
+
+POWERLINE_GIT_INFO_LEFT=""
+POWERLINE_GIT_INFO_RIGHT="%F{red}"$'\u2b82'"%F{black}%K{red}"$'$(git_prompt_info)'" %f"
+if [ "$POWERLINE_SHOW_GIT_ON_RIGHT" = "" ]; then
+    POWERLINE_GIT_INFO_LEFT=$'$(prompt_git_user)$(prompt_git)'
+    POWERLINE_GIT_INFO_RIGHT=""
+fi
+
+POWERLINE_COLOR_BG_GRAY=%K{240}
+POWERLINE_COLOR_BG_LIGHT_GRAY=%K{240}
+POWERLINE_COLOR_BG_WHITE=%K{255}
+
+POWERLINE_COLOR_FG_GRAY=%F{240}
+POWERLINE_COLOR_FG_LIGHT_GRAY=%F{240}
+POWERLINE_COLOR_FG_WHITE=%F{255}
+
+GIT_DIRTY_COLOR=%F{red}
+GIT_LCL_CLEAN_COLOR=%F{green}
+GIT_REM_CLEAN_COLOR=%F{black}
+GIT_PROMPT_INFO=%F{012}
+
+ZSH_THEME_GIT_PROMPT_PREFIX=" \u2b60 "
+ZSH_THEME_GIT_PROMPT_SUFFIX="$GIT_PROMPT_INFO"
+ZSH_THEME_GIT_PROMPT_DIRTY=" $GIT_DIRTY_COLOR✘"
+ZSH_THEME_GIT_PROMPT_CLEAN=" $GIT_CLEAN_COLOR✔"
+
+ZSH_THEME_GIT_PROMPT_ADDED="%F{082}✚%f"
+ZSH_THEME_GIT_PROMPT_MODIFIED="%F{166}✹%f"
+ZSH_THEME_GIT_PROMPT_DELETED="%F{160}✖%f"
+ZSH_THEME_GIT_PROMPT_RENAMED="%F{220]➜%f"
+ZSH_THEME_GIT_PROMPT_UNMERGED="%F{082]═%f"
+ZSH_THEME_GIT_PROMPT_UNTRACKED="%F{190]✭%f"
+
+
+ZSH_THEME_GIT_PROMPT_AHEAD_REMOTE='»'
+ZSH_THEME_GIT_PROMPT_BEHIND_REMOTE='«'
+ZSH_THEME_GIT_PROMPT_DIVERGED_REMOTE='!'
+
+PROMPT='%{%f%b%k%}$(build_prompt)'
+
+if [ "$POWERLINE_NO_BLANK_LINE" = "" ]; then
+    PROMPT="
+"$PROMPT
+fi
+# RPROMPT=$POWERLINE_GIT_INFO_RIGHT$POWERLINE_COLOR_FG_WHITE$'\u2b82'"%f$POWERLINE_COLOR_BG_WHITE $POWERLINE_COLOR_FG_GRAY$POWERLINE_RIGHT_B "$'\u2b82'"%f%k$POWERLINE_COLOR_BG_GRAY$POWERLINE_COLOR_FG_WHITE $POWERLINE_RIGHT_A %f%k"
+RPROMPT='%{%f%b%k%}$(build_rev_prompt)'
+
+
