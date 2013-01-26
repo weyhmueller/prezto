@@ -132,7 +132,6 @@ function prompt_weyhmueller_history() {
 
 ## Main prompt
 function prompt_weyhmueller_build_prompt() {
-  RETVAL=$?
   prompt_weyhmueller_status
   prompt_weyhmueller_context
   prompt_weyhmueller_dir
@@ -151,38 +150,9 @@ function prompt_weyhmueller_build_rev_prompt() {
 function prompt_weyhmueller_setup() {
 
   add-zsh-hook precmd prompt_weyhmueller_precmd
-
-  if [ "$POWERLINE_RIGHT_B" = "" ]; then
-    POWERLINE_RIGHT_B=%D{%H:%M:%S}
-  fi
-
-  if [ "$POWERLINE_RIGHT_A" = "" ]; then
-    POWERLINE_RIGHT_A=%D{%Y-%m-%d}
-  fi
-
-  if [ "$POWERLINE_FULL_CURRENT_PATH" = "" ]; then
-    POWERLINE_CURRENT_PATH="%1~"
-  fi
-
-  POWERLINE_GIT_INFO_LEFT=""
-  POWERLINE_GIT_INFO_RIGHT="%F{red}"$'\u2b82'"%F{black}%K{red}"$'$(git_prompt_info)'" %f"
-  if [ "$POWERLINE_SHOW_GIT_ON_RIGHT" = "" ]; then
-      POWERLINE_GIT_INFO_LEFT=$'$(prompt_git_user)$(prompt_git)'
-      POWERLINE_GIT_INFO_RIGHT=""
-  fi
-
-  POWERLINE_COLOR_BG_GRAY=%K{240}
-  POWERLINE_COLOR_BG_LIGHT_GRAY=%K{240}
-  POWERLINE_COLOR_BG_WHITE=%K{255}
-
-  POWERLINE_COLOR_FG_GRAY=%F{240}
-  POWERLINE_COLOR_FG_LIGHT_GRAY=%F{240}
-  POWERLINE_COLOR_FG_WHITE=%F{255}
-
   GIT_DIRTY_COLOR=%F{red}
   GIT_LCL_CLEAN_COLOR=%F{green}
   GIT_REM_CLEAN_COLOR=%F{black}
-  GIT_PROMPT_INFO=%F{012}
 
 
   zstyle ':prezto:module:editor:info:completing' format '%F{blue}...%f'
@@ -209,19 +179,12 @@ function prompt_weyhmueller_setup() {
     'behind' '%B' \
     'symbols' ' %A%B%S%a%d%m%r%U%u'
 
-
-  ZSH_THEME_GIT_PROMPT_PREFIX=" \u2b60 "
-  ZSH_THEME_GIT_PROMPT_SUFFIX="$GIT_PROMPT_INFO"
-  ZSH_THEME_GIT_PROMPT_DIRTY=" $GIT_DIRTY_COLOR✘"
-  ZSH_THEME_GIT_PROMPT_CLEAN=" $GIT_CLEAN_COLOR✔"
-
   PROMPT='%{%f%b%k%}$(prompt_weyhmueller_build_prompt)'
 
   if [ "$POWERLINE_NO_BLANK_LINE" = "" ]; then
       PROMPT="
-  "$PROMPT
+"$PROMPT
   fi
-  # RPROMPT=$POWERLINE_GIT_INFO_RIGHT$POWERLINE_COLOR_FG_WHITE$'\u2b82'"%f$POWERLINE_COLOR_BG_WHITE $POWERLINE_COLOR_FG_GRAY$POWERLINE_RIGHT_B "$'\u2b82'"%f%k$POWERLINE_COLOR_BG_GRAY$POWERLINE_COLOR_FG_WHITE $POWERLINE_RIGHT_A %f%k"
   RPROMPT='%{%f%b%k%}$(prompt_weyhmueller_build_rev_prompt)'
 }
 
