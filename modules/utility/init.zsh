@@ -13,14 +13,14 @@ pmodload 'helper' 'spectrum'
 # Correct commands.
 setopt CORRECT
 setopt CORRECT_ALL
- setopt NOBEEP
+setopt NOBEEP
 
 #
 # Aliases
 #
 
 # Disable correction.
-alias ack='nocorrect ack'
+#alias ack='nocorrect ack'
 alias cd='nocorrect cd'
 alias cp='nocorrect cp'
 alias ebuild='nocorrect ebuild'
@@ -67,8 +67,13 @@ if is-callable 'dircolors'; then
 
   if zstyle -t ':prezto:module:utility:ls' color; then
     if [[ -s "$HOME/.dir_colors" ]]; then
-      eval "$(dircolors "$HOME/.dir_colors")"
+      # This is a precompiled dir_colors file
+      source "$HOME/.dir_colors"
+    elif [[ -s "$HOME/.dir_colors.txt" ]]; then
+      # This is a text file suitable for the dircolors tool
+      eval "$(dircolors "$HOME/.dircolors.txt")"
     else
+      # Fallback to some basic colors, even if they are ugly
       eval "$(dircolors)"
     fi
 
