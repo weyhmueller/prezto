@@ -13,14 +13,14 @@ pmodload 'helper' 'spectrum'
 # Correct commands.
 setopt CORRECT
 setopt CORRECT_ALL
- setopt NOBEEP
+setopt NOBEEP
 
 #
 # Aliases
 #
 
 # Disable correction.
-alias ack='nocorrect ack'
+#alias ack='nocorrect ack'
 alias cd='nocorrect cd'
 alias cp='nocorrect cp'
 alias ebuild='nocorrect ebuild'
