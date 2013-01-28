@@ -100,13 +100,13 @@ alias gCt='git checkout --theirs --'
 alias gCT='gCt $(gCl)'
 
 # Log (l)
-alias gl='git log --topo-order --pretty=format:${_git_log_medium_format}'
-alias gls='git log --topo-order --stat --pretty=format:${_git_log_medium_format}'
-alias gld='git log --topo-order --stat --patch --full-diff --pretty=format:${_git_log_medium_format}'
-alias glo='git log --topo-order --pretty=format:${_git_log_oneline_format}'
-alias glg='git log --topo-order --all --graph --pretty=format:${_git_log_oneline_format}'
-alias glb='git log --topo-order --pretty=format:${_git_log_brief_format}'
-alias glc='git shortlog --summary --numbered'
+alias glog='git log --topo-order --pretty=format:${_git_log_medium_format}'
+alias glogs='git log --topo-order --stat --pretty=format:${_git_log_medium_format}'
+alias glogd='git log --topo-order --stat --patch --full-diff --pretty=format:${_git_log_medium_format}'
+alias glogo='git log --topo-order --pretty=format:${_git_log_oneline_format}'
+alias glogg='git log --topo-order --all --graph --pretty=format:${_git_log_oneline_format}'
+alias glogb='git log --topo-order --pretty=format:${_git_log_brief_format}'
+alias glogc='git shortlog --summary --numbered'
 
 # Merge (m)
 alias gm='git merge'
