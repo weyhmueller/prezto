@@ -132,6 +132,7 @@ function prompt_weyhmueller_history() {
 
 ## Main prompt
 function prompt_weyhmueller_build_prompt() {
+  RETVAL=$?
   prompt_weyhmueller_status
   prompt_weyhmueller_context
   prompt_weyhmueller_dir
