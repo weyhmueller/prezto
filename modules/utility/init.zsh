@@ -77,6 +77,21 @@ if is-callable 'dircolors'; then
 #  else
     #alias ls="$aliases[ls] -F"
   fi
+elif is-callable 'gdircolors'; then
+  # have GNU Utils with g-prefix
+  if zstyle -t ':prezto:module:utility:ls' color; then
+    if [[ -s "$HOME/.dir_colors" ]]; then
+      # This is a precompiled dir_colors file
+      source "$HOME/.dir_colors"
+    elif [[ -s "$HOME/.dir_colors.txt" ]]; then
+      # This is a text file suitable for the dircolors tool
+      eval "$(gdircolors "$HOME/.dircolors.txt")"
+    else
+      # Fallback to some basic colors, even if they are ugly
+      eval "$(gdircolors)"
+    fi
+    alias ls='gls --color'
+  fi
 else
   # BSD Core Utilities
   if zstyle -t ':prezto:module:utility:ls' color; then
