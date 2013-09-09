@@ -6,7 +6,7 @@ SEGMENT_REV_SEPARATOR=' '
 # Begin a segment
 # Takes two arguments, background and foreground. Both can be omitted,
 # rendering default background/foreground.
-function prompt_weyhmueller_segment() {
+function prompt_powerless_segment() {
   local bg fg
   [[ -n $1 ]] && bg="%K{$1}" || bg="%k"
   [[ -n $2 ]] && fg="%F{$2}" || fg="%f"
@@ -19,7 +19,7 @@ function prompt_weyhmueller_segment() {
   [[ -n $3 ]] && echo -n $3
 }
 
-function prompt_weyhmueller_segment_rev() {
+function prompt_powerless_segment_rev() {
   local bg fg
   [[ -n $1 ]] && bg="%K{$1}" || bg="%k"
   [[ -n $2 ]] && fg="%F{$2}" || fg="%f"
@@ -33,7 +33,7 @@ function prompt_weyhmueller_segment_rev() {
 }
 
 # End the prompt, closing any open segments
-function prompt_weyhmueller_end() {
+function prompt_powerless_end() {
   if [[ -n $CURRENT_BG ]]; then
     echo -n " %{%k%F{$CURRENT_BG}%}$SEGMENT_SEPARATOR"
   else
@@ -47,16 +47,16 @@ function prompt_weyhmueller_end() {
 # Each component will draw itself, and hide itself if no information needs to be shown
 
 # Context: user@hostname (who am I and where am I)
-function prompt_weyhmueller_context() {
+function prompt_powerless_context() {
   local user=`whoami`
 
   if [[ "$user" != "$DEFAULT_USER" || -n "$SSH_CLIENT" ]]; then
-    prompt_weyhmueller_segment black default "%(!.%{%F{red}%}.)$user@%m"
+    prompt_powerless_segment black default "%(!.%{%F{red}%}.)$user@%m"
   fi
 }
 
 # Git: branch/detached head, dirty status
-function prompt_weyhmueller_git() {
+function prompt_powerless_git() {
   local ref dirty ahead behind
   if $(git rev-parse --is-inside-work-tree >/dev/null 2>&1); then
     dirty=$git_info[dirty]
@@ -64,93 +64,95 @@ function prompt_weyhmueller_git() {
     behind=$git_info[behind]
     ref=$(git symbolic-ref HEAD 2> /dev/null) || ref="➦ $(git show-ref --head -s --abbrev |head -n1 2> /dev/null)"
     if [[ $dirty != "" ]]; then
-      prompt_weyhmueller_segment default yellow
+      prompt_powerless_segment default yellow
     elif [[ $ahead != "" ]] || [[ $behind != "" ]]; then
       if [[ $ahead != "" ]]; then
-        prompt_weyhmueller_segment default blue
+        prompt_powerless_segment default blue
         GIT_CLEAN_COLOR=$GIT_LCL_CLEAN_COLOR
       else
-        prompt_weyhmueller_segment default red
+        prompt_powerless_segment default red
       fi
     else
-      prompt_weyhmueller_segment default green
+      prompt_powerless_segment default green
       GIT_CLEAN_COLOR=$GIT_REM_CLEAN_COLOR
     fi
     echo -n "${ref/refs\/heads\//B }$git_info[symbols]"
   fi
 }
 
-function prompt_weyhmueller_git_user() {
+function prompt_powerless_git_user() {
   if $(git rev-parse --is-inside-work-tree >/dev/null 2>&1); then
     local gitrepuser="$(git config --local user.email)"
     local gitglobuser="$(git config --global user.email)"
     local gituser="${GIT_AUTHOR_EMAIL:-${gitrepuser:-${gitglobuser}}}"
     if [[ ${gituser} == 'oliver@weyhmueller.de' || ${gituser} == '' ]]; then
       gituser="oli"
-      prompt_weyhmueller_segment default green
+      prompt_powerless_segment default green
     elif [[ ${gituser} == 'oliver.weyhmueller@t-systems.com' ]]; then
       gituser="tsi"
-      prompt_weyhmueller_segment default magenta
+      prompt_powerless_segment default magenta
     else
       gituser="???"
-      prompt_weyhmueller_segment default red
+      prompt_powerless_segment default red
     fi
     echo -n "$gituser"
   fi
 }
 
 # Dir: current working directory
-function prompt_weyhmueller_dir() {
-  prompt_weyhmueller_segment "" blue "${PWD/#$HOME/~}"
+function prompt_powerless_dir() {
+  prompt_powerless_segment "" blue "${PWD/#$HOME/~}"
 }
 
 # Status:
 # - was there an error
 # - am I root
 # - are there background jobs?
-function prompt_weyhmueller_status() {
+function prompt_powerless_status() {
   local symbols
   symbols=()
   [[ $RETVAL -ne 0 ]] && symbols+="%{%F{red}%}X $RETVAL"
   [[ $UID -eq 0 ]] && symbols+="%{%F{yellow}%}R"
   [[ $(jobs -l | wc -l) -gt 0 ]] && symbols+="%{%F{cyan}%}J"
 
-  [[ -n "$symbols" ]] && prompt_weyhmueller_segment default default "$symbols"
+  [[ -n "$symbols" ]] && prompt_powerless_segment default default "$symbols"
 }
 
-function prompt_weyhmueller_time() {
-  prompt_weyhmueller_segment_rev default cyan '%D{%H:%M:%S}'
+function prompt_powerless_time() {
+  prompt_powerless_segment_rev default cyan '%D{%H:%M:%S}'
 }
 
-function prompt_weyhmueller_date() {
-  prompt_weyhmueller_segment_rev default default '%D{%Y-%m-%d}'
+function prompt_powerless_date() {
+  prompt_powerless_segment_rev default default '%D{%Y-%m-%d}'
 }
 
-function prompt_weyhmueller_history() {
-  prompt_weyhmueller_segment_rev default green '[%h]'
+function prompt_powerless_history() {
+  prompt_powerless_segment_rev default green '[%h]'
 }
 
 ## Main prompt
-function prompt_weyhmueller_build_prompt() {
+function prompt_powerless_build_prompt() {
   RETVAL=$?
-  prompt_weyhmueller_status
-  prompt_weyhmueller_context
-  prompt_weyhmueller_dir
-  prompt_weyhmueller_git_user
-  prompt_weyhmueller_git
-  prompt_weyhmueller_end
+  prompt_powerless_status
+  prompt_powerless_context
+  prompt_powerless_dir
+  prompt_powerless_git_user
+  prompt_powerless_git
+  prompt_powerless_end
 }
 
 ## Rev Prompt
-function prompt_weyhmueller_build_rev_prompt() {
-  prompt_weyhmueller_time
-  prompt_weyhmueller_date
-  prompt_weyhmueller_history
+function prompt_powerless_build_rev_prompt() {
+  prompt_powerless_time
+  prompt_powerless_date
+  prompt_powerless_history
 }
 
-function prompt_weyhmueller_setup() {
+function prompt_powerless_setup() {
+SEGMENT_SEPARATOR=' '
+SEGMENT_REV_SEPARATOR=' '
 
-  add-zsh-hook precmd prompt_weyhmueller_precmd
+  add-zsh-hook precmd prompt_powerless_precmd
   GIT_DIRTY_COLOR=%F{red}
   GIT_LCL_CLEAN_COLOR=%F{green}
   GIT_REM_CLEAN_COLOR=%F{black}
@@ -180,19 +182,19 @@ function prompt_weyhmueller_setup() {
     'behind' '%B' \
     'symbols' ' %A%B%S%a%d%m%r%U%u'
 
-  PROMPT='%{%f%b%k%}$(prompt_weyhmueller_build_prompt)'
+  PROMPT='%{%f%b%k%}$(prompt_powerless_build_prompt)'
 
   if [ "$POWERLINE_NO_BLANK_LINE" = "" ]; then
       PROMPT="
 "$PROMPT
   fi
-  RPROMPT='%{%f%b%k%}$(prompt_weyhmueller_build_rev_prompt)'
+  RPROMPT='%{%f%b%k%}$(prompt_powerless_build_rev_prompt)'
 }
 
-function prompt_weyhmueller_precmd() {
+function prompt_powerless_precmd() {
   if (( $+functions[git-info] )); then
     git-info
   fi
 }
 
-prompt_weyhmueller_setup $@
+prompt_powerless_setup $@

@@ -149,6 +149,8 @@ function prompt_weyhmueller_build_rev_prompt() {
 }
 
 function prompt_weyhmueller_setup() {
+SEGMENT_SEPARATOR='⮀'
+SEGMENT_REV_SEPARATOR='⮂'
 
   add-zsh-hook precmd prompt_weyhmueller_precmd
   GIT_DIRTY_COLOR=%F{red}
