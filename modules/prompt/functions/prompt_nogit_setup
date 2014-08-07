@@ -1,0 +1,158 @@
+CURRENT_BG='NONE'
+CURRENT_REV_BG='NONE'
+SEGMENT_SEPARATOR='⮀'
+SEGMENT_REV_SEPARATOR='⮂'
+
+# Begin a segment
+# Takes two arguments, background and foreground. Both can be omitted,
+# rendering default background/foreground.
+function prompt_nogit_segment() {
+  local bg fg
+  [[ -n $1 ]] && bg="%K{$1}" || bg="%k"
+  [[ -n $2 ]] && fg="%F{$2}" || fg="%f"
+  if [[ $CURRENT_BG != 'NONE' && $1 != $CURRENT_BG ]]; then
+    echo -n " %{$bg%F{$CURRENT_BG}%}$SEGMENT_SEPARATOR%{$fg%} "
+  else
+    echo -n "%{$bg%}%{$fg%} "
+  fi
+  CURRENT_BG=$1
+  [[ -n $3 ]] && echo -n $3
+}
+
+function prompt_nogit_segment_rev() {
+  local bg fg
+  [[ -n $1 ]] && bg="%K{$1}" || bg="%k"
+  [[ -n $2 ]] && fg="%F{$2}" || fg="%f"
+  if [[ $1 != $CURRENT_REV_BG  && $1 != "default" ]]; then
+    echo -n " %{%F{$1}%}$SEGMENT_REV_SEPARATOR%{$bg%}%{$fg%}"
+  else
+    echo -n "%{$bg%}%{$fg%} "
+  fi
+  CURRENT_REV_BG=$1
+  [[ -n $3 ]] && echo -n $3
+}
+
+# End the prompt, closing any open segments
+function prompt_nogit_end() {
+  if [[ -n $CURRENT_BG ]]; then
+    echo -n " %{%k%F{$CURRENT_BG}%}$SEGMENT_SEPARATOR"
+  else
+    echo -n "%{%k%}"
+  fi
+  echo -n "%{%f%} "
+  CURRENT_BG=''
+}
+
+### Prompt components
+# Each component will draw itself, and hide itself if no information needs to be shown
+
+# Context: user@hostname (who am I and where am I)
+function prompt_nogit_context() {
+  local user=`whoami`
+
+  if [[ "$user" != "$DEFAULT_USER" || -n "$SSH_CLIENT" ]]; then
+    prompt_nogit_segment black default "%(!.%{%F{red}%}.)$user@%m"
+  fi
+}
+
+# Git: branch/detached head, dirty status
+function prompt_nogit_git() {
+}
+
+function prompt_nogit_git_user() {
+}
+
+# Dir: current working directory
+function prompt_nogit_dir() {
+  prompt_nogit_segment blue black "${PWD/#$HOME/~}"
+}
+
+# Status:
+# - was there an error
+# - am I root
+# - are there background jobs?
+function prompt_nogit_status() {
+  local symbols
+  symbols=()
+  [[ $RETVAL -ne 0 ]] && symbols+="%{%F{red}%}✘ $RETVAL"
+  [[ $UID -eq 0 ]] && symbols+="%{%F{yellow}%}⚡"
+  [[ $(jobs -l | wc -l) -gt 0 ]] && symbols+="%{%F{cyan}%}⚙"
+
+  [[ -n "$symbols" ]] && prompt_nogit_segment black default "$symbols"
+}
+
+function prompt_nogit_time() {
+  prompt_nogit_segment_rev default cyan '%D{%H:%M:%S}'
+}
+
+function prompt_nogit_date() {
+  prompt_nogit_segment_rev default default '%D{%Y-%m-%d}'
+}
+
+function prompt_nogit_history() {
+  prompt_nogit_segment_rev green black '[%h]'
+}
+
+## Main prompt
+function prompt_nogit_build_prompt() {
+  RETVAL=$?
+  prompt_nogit_status
+  prompt_nogit_context
+  prompt_nogit_dir
+  prompt_nogit_end
+}
+
+## Rev Prompt
+function prompt_nogit_build_rev_prompt() {
+  prompt_nogit_time
+  prompt_nogit_date
+  prompt_nogit_history
+}
+
+function prompt_nogit_setup() {
+SEGMENT_SEPARATOR='⮀'
+SEGMENT_REV_SEPARATOR='⮂'
+
+  add-zsh-hook precmd prompt_nogit_precmd
+  GIT_DIRTY_COLOR=%F{red}
+  GIT_LCL_CLEAN_COLOR=%F{green}
+  GIT_REM_CLEAN_COLOR=%F{black}
+
+
+  zstyle ':prezto:module:editor:info:completing' format '%F{blue}...%f'
+  zstyle ':prezto:module:editor:info:keymap:primary' format ' %B%F{red}❯%F{yellow}❯%F{green}❯%f%b'
+  zstyle ':prezto:module:editor:info:keymo p:primary:overwrite' format ' %F{red}♺%f'
+  zstyle ':prezto:module:editor:info:keymap:alternate' format ' %B%F{green}❮%F{yellow}❮%F{red}❮%f%b'
+  zstyle ':prezto:module:git:info:action' format ':%%B%F{yellow}%s%f%%b'
+  zstyle ':prezto:module:git:info:added' format '✚'
+  zstyle ':prezto:module:git:info:ahead' format '⬆ '
+  zstyle ':prezto:module:git:info:behind' format '⬇ '
+  zstyle ':prezto:module:git:info:dirty' format '%D'
+  zstyle ':prezto:module:git:info:branch' format ':%F{green}%b%f'
+  zstyle ':prezto:module:git:info:commit' format ':%F{green}%.7c%f'
+  zstyle ':prezto:module:git:info:deleted' format '✖'
+  zstyle ':prezto:module:git:info:modified' format '✱'
+  zstyle ':prezto:module:git:info:position' format ':%F{red}%p%f'
+  zstyle ':prezto:module:git:info:renamed' format '➜'
+  zstyle ':prezto:module:git:info:stashed' format '✭'
+  zstyle ':prezto:module:git:info:unmerged' format '═'
+  zstyle ':prezto:module:git:info:untracked' format ' ◼'
+  zstyle ':prezto:module:git:info:keys' format \
+    'dirty' '%D' \
+    'ahead' '%A' \
+    'behind' '%B' \
+    'symbols' ' %A%B%S%a%d%m%r%U%u'
+
+  PROMPT='%{%f%b%k%}$(prompt_nogit_build_prompt)'
+
+  if [ "$POWERLINE_NO_BLANK_LINE" = "" ]; then
+      PROMPT="
+"$PROMPT
+  fi
+  RPROMPT='%{%f%b%k%}$(prompt_nogit_build_rev_prompt)'
+}
+
+function prompt_nogit_precmd() {
+}
+
+prompt_nogit_setup $@
