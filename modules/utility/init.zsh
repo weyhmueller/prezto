@@ -79,13 +79,13 @@ if is-callable 'dircolors'; then
 
   if zstyle -t ':prezto:module:utility:ls' color; then
     # Call dircolors to define colors if they're missing
-    if [[ -z "$LS_COLORS" ]]; then
+    #if [[ -z "$LS_COLORS" ]]; then
       if [[ -s "$HOME/.dir_colors" ]]; then
         eval "$(dircolors --sh "$HOME/.dir_colors")"
       else
         eval "$(dircolors --sh)"
       fi
-    fi
+    #fi
 
     #alias ls="$aliases[ls] --color=auto"
 #  else
@@ -96,10 +96,10 @@ elif is-callable 'gdircolors'; then
   if zstyle -t ':prezto:module:utility:ls' color; then
     if [[ -s "$HOME/.dir_colors" ]]; then
       # This is a precompiled dir_colors file
-      source "$HOME/.dir_colors"
-    elif [[ -s "$HOME/.dir_colors.txt" ]]; then
+      #source "$HOME/.dir_colors"
+    #elif [[ -s "$HOME/.dir_colors.txt" ]]; then
       # This is a text file suitable for the dircolors tool
-      eval "$(gdircolors "$HOME/.dircolors.txt")"
+      eval "$(gdircolors "$HOME/.dir_colors")"
     else
       # Fallback to some basic colors, even if they are ugly
       eval "$(gdircolors)"
