@@ -104,12 +104,12 @@ elif is-callable 'gdircolors'; then
       #source "$HOME/.dir_colors"
     #elif [[ -s "$HOME/.dir_colors.txt" ]]; then
       # This is a text file suitable for the dircolors tool
-      eval "$(gdircolors "$HOME/.dir_colors")"
+      #eval "$(gdircolors "$HOME/.dir_colors")"
     else
       # Fallback to some basic colors, even if they are ugly
-      eval "$(gdircolors)"
+      #eval "$(gdircolors)"
     fi
-    alias ls='gls --color'
+    #alias ls='gls --color'
   fi
 else
   # BSD Core Utilities
@@ -120,15 +120,16 @@ else
     fi
 
     # Define colors for the completion system if they're not already defined
-    if [[ -z "$LS_COLORS" ]]; then
-      export LS_COLORS='di=34:ln=35:so=32:pi=33:ex=31:bd=36;01:cd=33;01:su=31;40;07:sg=36;40;07:tw=32;40;07:ow=33;40;07:'
-    fi
+    #if [[ -z "$LS_COLORS" ]]; then
+    #  export LS_COLORS='di=34:ln=35:so=32:pi=33:ex=31:bd=36;01:cd=33;01:su=31;40;07:sg=36;40;07:tw=32;40;07:ow=33;40;07:'
+    #fi
 
 #    alias ls='ls -G'
 #  else
 #    alias ls='ls -F'
   fi
 fi
+unset LS_COLORS
 
 alias l='ls -1A'         # Lists in one column, hidden files.
 alias ll='ls -Flh'        # Lists human readable sizes.
